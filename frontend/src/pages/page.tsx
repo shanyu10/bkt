@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import ProductCard from '@/components/ProductCard';
 import { Link } from 'react-router-dom';
 import { Product } from '@/lib/store'; // Import Product interface
-import { getProducts } from '@/lib/api'; // Import the new API function
+import { getProducts, fetchWishlist } from '@/lib/api'; // Import the new API function
 import Skeleton from '@/components/Skeleton'; // Import Skeleton component
+import { useAuthStore } from '@/lib/store';
 
 interface Series {
   name: string;
@@ -15,32 +16,45 @@ const HomePage = () => {
   const [newArrivals, setNewArrivals] = useState<Product[]>([]);
   const [series, setSeries] = useState<Series[]>([]);
   const [loading, setLoading] = useState(true); // Add loading state
+  const [wishlistProductIds, setWishlistProductIds] = useState<Set<string>>(new Set());
+  const { isLoggedIn, token } = useAuthStore();
   const heroImageUrl = "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=3174&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchData = async () => {
+      setLoading(true);
       try {
-        setLoading(true); // Set loading to true before fetch
-        const productsData = await getProducts(); // Use the new API function
-        console.log("Products Data:", productsData);
-        setNewArrivals(productsData.slice(0, 4)); // Take first 4 for new arrivals
-        // For series, we'll extract unique series names and create slugs
+        const productsData = await getProducts();
+        setNewArrivals(productsData.slice(0, 4));
+
         const uniqueSeries = Array.from(new Set(productsData.map((p: Product) => p.seriesName)))
           .map(name => ({
             name,
             slug: (name as string).toLowerCase().replace(/ /g, '-'),
-            imageUrl: productsData.find((p: Product) => p.seriesName === name)?.imageUrl || '' // Use an image from a product in that series
+            imageUrl: productsData.find((p: Product) => p.seriesName === name)?.imageUrl || ''
           }));
         setSeries(uniqueSeries);
+
+        if (isLoggedIn && token) {
+          try {
+            const wishlistRes = await fetchWishlist(token);
+            if (wishlistRes && wishlistRes.items) {
+              const ids = new Set(wishlistRes.items.map((item: any) => item.id));
+              setWishlistProductIds(ids);
+            }
+          } catch (wishlistError) {
+            console.error('Error fetching wishlist:', wishlistError);
+          }
+        }
       } catch (error) {
-        console.error("Error fetching products:", error);
+        console.error("Error fetching data:", error);
       } finally {
-        setLoading(false); // Set loading to false after fetch (or error)
+        setLoading(false);
       }
     };
 
-    fetchProducts();
-  }, []);
+    fetchData();
+  }, [isLoggedIn, token]);
 
   return (
     <div className="bg-white">

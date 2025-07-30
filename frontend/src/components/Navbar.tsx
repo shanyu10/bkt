@@ -26,7 +26,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-lg">
+    <nav className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white md:bg-white/80 md:backdrop-blur-lg">
       <div className="container mx-auto flex h-20 items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link to="/" className="text-4xl font-bebas-neue tracking-widest text-gray-900">
@@ -68,7 +68,9 @@ const Navbar = () => {
           <div className="ml-4 flex items-center space-x-2">
             {isLoggedIn ? (
               <>
-                <span className="text-sm font-medium text-gray-700">{user?.email}</span>
+                <span className="text-sm font-medium text-gray-700">
+                  {user?.display_name || user?.email}
+                </span>
                 <button
                   onClick={logout}
                   className="rounded-md border border-gray-300 px-3 py-1 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
@@ -119,12 +121,28 @@ const Navbar = () => {
           <Link to="/about" className="font-inter text-lg text-gray-700 hover:text-gray-900" onClick={toggleMenu}>
             About
           </Link>
-          <Link to="/login" className="rounded-md border border-gray-300 px-3 py-1 text-lg font-medium text-gray-700 transition-colors hover:bg-gray-100" onClick={toggleMenu}>
-            Login
-          </Link>
-          <Link to="/register" className="rounded-md bg-gray-900 px-3 py-1 text-lg font-medium text-white transition-colors hover:bg-gray-700" onClick={toggleMenu}>
-            Register
-          </Link>
+          {isLoggedIn ? (
+            <div className="flex flex-col space-y-4 border-t pt-6">
+              <span className="font-inter text-lg text-gray-700">
+                {user?.display_name || user?.email}
+              </span>
+              <button
+                onClick={() => { logout(); toggleMenu(); }}
+                className="rounded-md border border-gray-300 px-3 py-1 text-lg font-medium text-gray-700 transition-colors hover:bg-gray-100"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col space-y-4 border-t pt-6">
+              <Link to="/login" className="rounded-md border border-gray-300 px-3 py-1 text-lg font-medium text-gray-700 transition-colors hover:bg-gray-100" onClick={toggleMenu}>
+                Login
+              </Link>
+              <Link to="/register" className="rounded-md bg-gray-900 px-3 py-1 text-lg font-medium text-white transition-colors hover:bg-gray-700" onClick={toggleMenu}>
+                Register
+              </Link>
+            </div>
+          )}
           <div className="border-t pt-6">
             <div className="flex items-center justify-around">
               <Link to="/profile" className="text-gray-600 hover:text-gray-900" onClick={toggleMenu}>

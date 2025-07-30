@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuthStore } from '@/lib/store';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import { loginUser, resendVerificationEmail } from '@/lib/api';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -19,16 +19,10 @@ const LoginPage = () => {
       return;
     }
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/resend-verification`, {
-        email,
-      });
-      setResendMessage(response.data.message);
+      const response = await resendVerificationEmail(email);
+      setResendMessage(response.message);
     } catch (err: any) {
-      if (axios.isAxiosError(err) && err.response) {
-        setError(err.response.data.message || 'Failed to resend verification email.');
-      } else {
-        setError('An unexpected error occurred while resending verification email.');
-      }
+      setError(err.message || 'An unexpected error occurred while resending verification email.');
     }
   };
 
@@ -46,24 +40,17 @@ const LoginPage = () => {
     }
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/login`, {
-        email,
-        password,
-      });
+      const response = await loginUser(email, password);
 
-      if (response.status === 200) {
-        setSuccessMessage(response.data.message);
-        useAuthStore.getState().login(response.data.user, response.data.access_token);
+      if (response) {
+        setSuccessMessage(response.message);
+        useAuthStore.getState().login(response.user, response.access_token);
         navigate('/');
       } else {
-        setError(response.data.message || 'Login failed.');
+        setError(response.message || 'Login failed.');
       }
     } catch (err: any) {
-      if (axios.isAxiosError(err) && err.response) {
-        setError(err.response.data.message || 'An unexpected error occurred');
-      } else {
-        setError((err as Error).message || 'An unexpected error occurred');
-      }
+      setError(err.message || 'An unexpected error occurred');
     } finally {
       setLoading(false);
     }

@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import { registerUser } from '@/lib/api';
 
 const RegisterPage = () => {
   const [email, setEmail] = useState('');
@@ -18,26 +18,19 @@ const RegisterPage = () => {
 
     try {
       console.log("Attempting to register with:", { email, password });
-      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/register`, {
-        email,
-        password,
-      });
+      const res = await registerUser(email, password);
 
-      if (res.status === 201) {
+      if (res) {
         setSuccessMessage('Registration successful! Redirecting to login...');
         setTimeout(() => {
           navigate('/login');
         }, 2000); // Redirect after 2 seconds
       } else {
-        console.error("Registration failed:", res.data);
-        throw new Error(res.data.message || 'Failed to register');
+        console.error("Registration failed:", res);
+        throw new Error(res.message || 'Failed to register');
       }
     } catch (err: any) {
-      if (axios.isAxiosError(err) && err.response) {
-        setError(err.response.data.message || 'An unexpected error occurred');
-      } else {
-        setError((err as Error).message || 'An unexpected error occurred');
-      }
+      setError(err.message || 'An unexpected error occurred');
     }
   };
 

@@ -18,12 +18,15 @@ This project follows a monorepo architecture managed by `npm workspaces`.
     -   Tailwind CSS for styling, with a focus on responsiveness across all components.
     -   `lucide-react` for icons.
     -   Reusable `ProductCard` component.
-    -   Client-side shopping cart state management using Zustand.
-    -   Responsive `Navbar` with cart item count.
+    -   Client-side shopping cart state management using Zustand, now with backend persistence.
+    -   Responsive `Navbar` with cart item count and user display name/email.
     -   Responsive `Footer`.
     -   Homepage (`/`) with Hero, New Arrivals, and Shop by Series sections, designed to be fully responsive.
     -   Dynamic Product Listing Page (`/category/slug`) with placeholder filters.
     -   Product Page (`/product/id`) with product details.
+    -   User Profile Page (`/profile`) allowing display name and password updates, with enhanced UI.
+    -   Wishlist functionality with visual indicators and toggle to add/remove items, backed by API persistence.
+    -   Cart functionality with visual indicators, backed by API persistence.
 
 -   **Node.js Backend:**
     -   Express.js for API creation.
@@ -83,7 +86,7 @@ From the root of the `bakguteh-market` directory:
     ```bash
     npm run dev:backend
     ```
-    This will start the Node.js Express server on `http://localhost:5001`.
+    This will start the Node.js Express server on `http://localhost:5001`. **Note: The backend server should generally remain running during development. Only restart it if changes are made to `backend/server.js` or its dependencies.**
 
 2.  **Start the Frontend Development Server:**
     ```bash

@@ -1,8 +1,13 @@
 
+import { useEffect } from 'react';
 import { useCartStore } from '@/lib/store';
 
 const CartPage = () => {
-  const { cartItems, removeFromCart, updateQuantity } = useCartStore();
+  const { cartItems, removeFromCart, updateQuantity, initCart } = useCartStore();
+
+  useEffect(() => {
+    initCart();
+  }, [initCart]);
 
   const total = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
 

@@ -1,25 +1,16 @@
 
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import ProductCard from '@/components/ProductCard';
-
-interface WishlistItem {
-  id: string;
-  imageUrl: string;
-  seriesName: string;
-  productName: string;
-  price: number;
-  isOnSale?: boolean;
-  originalPrice?: number;
-}
+import { fetchWishlist, removeProductFromWishlist } from '@/lib/api';
+import { useWishlistStore } from '@/lib/store';
 
 const WishlistPage = () => {
-  const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
+  const { wishlistItems, setWishlistItems, removeItem } = useWishlistStore();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchWishlist = async () => {
+    const fetchAndSetWishlist = async () => {
       const token = localStorage.getItem('token');
       if (!token) {
         setError('No token found, please log in.');
@@ -28,25 +19,21 @@ const WishlistPage = () => {
       }
 
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/wishlist`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
+        const res = await fetchWishlist(token);
 
-        if (res.status === 200) {
-          setWishlistItems(res.data.items || []);
+        if (res) {
+          setWishlistItems(res.items || []);
         } else {
-          setError(res.data.message || 'Failed to fetch wishlist');
+          setError(res.message || 'Failed to fetch wishlist');
         }
       } catch (err: any) {
-        setError(err.response?.data?.message || err.message);
+        setError(err.message);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchWishlist();
+    fetchAndSetWishlist();
   }, []);
 
   const handleRemoveFromWishlist = async (productId: string) => {
@@ -57,19 +44,15 @@ const WishlistPage = () => {
     }
 
     try {
-      const res = await axios.delete(`${import.meta.env.VITE_API_URL}/api/wishlist/${productId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      const res = await removeProductFromWishlist(token, productId);
 
-      if (res.status === 200) {
-        setWishlistItems(prevItems => prevItems.filter(item => item.id !== productId));
+      if (res) {
+        removeItem(productId);
       } else {
-        setError(res.data.message || 'Failed to remove from wishlist');
+        setError(res.message || 'Failed to remove from wishlist');
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message);
+      setError(err.message);
     }
   };
 
